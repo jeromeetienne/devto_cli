@@ -5,13 +5,13 @@ description: Create, update, schedule, read, preview, and list dev.to articles, 
 
 # devto_cli
 
-`devto_cli` is a command-line client of the [dev.to API](https://developers.forem.com/api). Run every command with `npx devto_cli`. Run `npx devto_cli <command> --help` for all the options of a command.
+`devto_cli` is a command-line client of the [dev.to API](https://developers.forem.com/api). Run every command with `npx --yes github:jeromeetienne/devto_cli`. Run `npx --yes github:jeromeetienne/devto_cli <command> --help` for all the options of a command.
 
 ## Login
 
-- Log in one time: `printf '%s' "$DEVTO_API_KEY" | npx devto_cli login`. The command checks the API key with dev.to, then stores the API key in `~/.config/devto_cli/credentials.json`. Every other command reads the API key from that file.
-- Check the login: `npx devto_cli status` says whether an API key is stored and whether dev.to accepts it. The exit code is 1 when the user is not logged in, or when the API key is not valid.
-- Log out: `npx devto_cli logout` deletes the stored API key.
+- Log in one time: `printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login`. The command checks the API key with dev.to, then stores the API key in `~/.config/devto_cli/credentials.json`. Every other command reads the API key from that file.
+- Check the login: `npx --yes github:jeromeetienne/devto_cli status` says whether an API key is stored and whether dev.to accepts it. The exit code is 1 when the user is not logged in, or when the API key is not valid.
+- Log out: `npx --yes github:jeromeetienne/devto_cli logout` deletes the stored API key.
 
 Never write the API key in a repository, in an issue, in a commit, or in a log message.
 
@@ -26,11 +26,11 @@ Every command except `login`, `status`, and `logout` takes `--format <format>`:
 ## Articles
 
 ```bash
-npx devto_cli create --title "My title" --body-file ./article.md --tags "typescript,cli" --cover-image ./cover.png
-npx devto_cli update <article identifier> --title "New title"
-npx devto_cli get <article identifier>
-npx devto_cli preview --body-file ./article.md
-npx devto_cli list --filter unpublished
+npx --yes github:jeromeetienne/devto_cli create --title "My title" --body-file ./article.md --tags "typescript,cli" --cover-image ./cover.png
+npx --yes github:jeromeetienne/devto_cli update <article identifier> --title "New title"
+npx --yes github:jeromeetienne/devto_cli get <article identifier>
+npx --yes github:jeromeetienne/devto_cli preview --body-file ./article.md
+npx --yes github:jeromeetienne/devto_cli list --filter unpublished
 ```
 
 - `create` makes a draft. Add `--publish` to publish now, or `--publish-at 2026-12-01T09:00:00Z` to publish at a future date.
@@ -41,24 +41,24 @@ npx devto_cli list --filter unpublished
 
 ## Images
 
-- `npx devto_cli image upload ./image.png` uploads an image and writes its address. With `--format markdown`, it writes `![image.png](<address>)`. The image is public as soon as it is uploaded.
+- `npx --yes github:jeromeetienne/devto_cli image upload ./image.png` uploads an image and writes its address. With `--format markdown`, it writes `![image.png](<address>)`. The image is public as soon as it is uploaded.
 - `create` and `update` upload a local file automatically: a local path in `--cover-image`, and each local image `![alt](./path.png)` of the text. A relative path in the text starts from the folder of the `--body-file` file.
 - The extensions are `.png`, `.jpg`, `.jpeg`, `.gif`, and `.webp`.
 - dev.to limits the number of uploads in a short time. `devto_cli` waits and retries 3 times after an answer 429.
 
 ## Comments
 
-- `npx devto_cli comment list <article identifier>` lists the comments of an article, with their answers.
-- `npx devto_cli comment get <comment identifier>` shows one comment, for example `comment get 3ldoo`.
+- `npx --yes github:jeromeetienne/devto_cli comment list <article identifier>` lists the comments of an article, with their answers.
+- `npx --yes github:jeromeetienne/devto_cli comment get <comment identifier>` shows one comment, for example `comment get 3ldoo`.
 - The dev.to API cannot post a comment.
 
 ## Analytics
 
 ```bash
-npx devto_cli analytics totals
-npx devto_cli analytics historical --start 2026-11-01 --end 2026-11-17
-npx devto_cli analytics past_day
-npx devto_cli analytics referrers
+npx --yes github:jeromeetienne/devto_cli analytics totals
+npx --yes github:jeromeetienne/devto_cli analytics historical --start 2026-11-01 --end 2026-11-17
+npx --yes github:jeromeetienne/devto_cli analytics past_day
+npx --yes github:jeromeetienne/devto_cli analytics referrers
 ```
 
 Add `--article <article identifier>` for one article.
@@ -66,9 +66,9 @@ Add `--article <article identifier>` for one article.
 ## Search
 
 ```bash
-npx devto_cli search articles rust compile time
-npx devto_cli search articles --semantic how to make rust builds faster
-npx devto_cli search published --tag typescript --username someone --top 7
+npx --yes github:jeromeetienne/devto_cli search articles rust compile time
+npx --yes github:jeromeetienne/devto_cli search articles --semantic how to make rust builds faster
+npx --yes github:jeromeetienne/devto_cli search published --tag typescript --username someone --top 7
 ```
 
 - `search articles` searches the words in the titles, the tags, and the text. `--top <days>` keeps only the articles of the last N days.
@@ -81,6 +81,7 @@ npx devto_cli search published --tag typescript --username someone --top 7
 - Unpublish: `PUT /articles/{id}/unpublish` answers 401. Use `update <id> --draft`.
 - Search users: `GET /users/search` answers 401, and it searches by exact email address only.
 - Post a comment: the API has no operation for it.
+- Delete an article: the API has no operation for it. To delete a draft, open the draft on the dev.to website, then choose "Delete". Each draft that a test creates stays on dev.to until the user deletes it there.
 
 ## Rules
 

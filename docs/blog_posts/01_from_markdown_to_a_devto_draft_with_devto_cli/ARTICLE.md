@@ -7,75 +7,78 @@
 - Related rules: [Documentation rules](../../../.agents/skills/docs_folder_system/SKILL.md)
 - Related issue: [Technical article workflow, issue #3](https://github.com/jeromeetienne/devto_cli/issues/3)
 
-*Writing about your code with a coding agent? Keep the article in your repository and let devto_cli carry the draft to dev.to.*
+*You already write with a coding agent. Give the coding agent one skill, and the coding agent puts your article on dev.to as a draft, with its cover and its images, and never publishes without asking you.*
 
 ![A local Markdown article passes through devto_cli into an unpublished dev.to draft.](image-main-v1.png)
 
-## The article is already beside the code
+## A command line that you never type
 
-You finish a feature, ask your coding agent to explain the feature, and revise the explanation into an article. The Markdown file sits beside the source code, where examples and claims are easy to check. You can review the article changes with the same tools you use to review code.
+[devto_cli](https://github.com/jeromeetienne/devto_cli) is a command line for dev.to. It creates and updates articles, uploads images, reads comments, shows analytics, and searches dev.to.
 
-Then comes the transfer to dev.to. Copy the text into the editor, add the title and tags, choose the cover, and repeat the transfer after the next revision. A script can send the article through the dev.to application programming interface, but somebody still has to handle authentication, construct requests, and interpret responses.
+Here is the surprise: devto_cli is not really made for you to type. It is made for your coding agent. The repository ships the [devto_cli skill](https://github.com/jeromeetienne/devto_cli/blob/main/skills/devto_cli/SKILL.md), a short file of instructions that tells a coding agent which command does what, which options exist, and which actions need your permission first.
 
-[devto_cli](https://github.com/jeromeetienne/devto_cli) puts those operations behind a small set of commands. A coding agent can read the local article, create a dev.to draft, and update the same article after you revise the text.
+So the real interface is a sentence in plain English:
 
-## Give the coding agent a repeatable workflow
+> Put the article in `docs/blog_posts/01_my_feature/ARTICLE.md` on dev.to as a draft, with the cover `image-main-v1.png` and the tags `typescript` and `cli`.
 
-The repository includes a [devto_cli skill](https://github.com/jeromeetienne/devto_cli/blob/main/skills/devto_cli/SKILL.md). A skill is a reusable set of instructions for a coding agent. The devto_cli skill explains authentication, article commands, output formats, and the need to ask before publishing or scheduling an article.
+The coding agent reads the devto_cli skill, runs the command, and gives you back the address of the draft. You open the draft on dev.to and read it. That is the whole workflow.
 
-Once your coding agent has the skill available, the request can describe the writing task:
+## What you can ask
 
-> Use devto_cli to create an unpublished dev.to draft from my local article Markdown file. Use the title and tags we agreed on. Report the article identifier and address. Ask before publishing or scheduling the article.
+Everything below is a request in plain words. The coding agent picks the command.
 
-After reviewing the draft, you can ask:
+- **Create a draft** from a Markdown file, with a title, tags, a description, a series, a canonical address, and a cover image.
+- **Keep your images local.** Write `![diagram](./diagram.png)` in your Markdown file. devto_cli uploads each local image to dev.to and replaces the local path with the hosted address. The cover image works the same way.
+- **Update the same draft** after each revision, so you get one draft, not five.
+- **Publish now, or at a date**, for example "publish it next Tuesday at 9:00 in Paris". The devto_cli skill tells the coding agent to ask you before it publishes or schedules anything.
+- **Turn a published article back into a draft.**
+- **Read an article back** with its text, to compare the remote draft with your local file.
+- **Preview** the rendered page of an article before anything is saved on dev.to.
+- **List** your drafts, your published articles, or both.
+- **Read the comments** of an article, with the answers.
+- **See the analytics**: totals, views by day, the last day, and the sites that send you readers, for all your articles or for one article.
+- **Search dev.to** by words, or by meaning, for example "what did people write about faster Rust builds this month?" before you write your own article.
 
-> Update the same dev.to draft from the revised local article. Keep the article unpublished and report the result.
+## Why not let the coding agent call the dev.to application programming interface directly?
 
-Keeping the article identifier matters: `create` makes a new article, while `update` changes an existing article. Revisions should use `update` so each revision does not become a separate draft.
+A good coding agent can read the dev.to application programming interface documentation and write the requests by itself. It works. It also goes wrong in small, boring, expensive ways, every session, again. devto_cli fixes each of those ways one time.
 
-## The details that make the workflow useful
+**Your application programming interface key stays out of the chat.** Without devto_cli, the application programming interface key goes into each request that the coding agent writes, and each request goes into the chat transcript and the shell history. With devto_cli, you log in one time. The command checks the application programming interface key with dev.to, stores the application programming interface key in your home folder, and every later command reads the application programming interface key from there. The coding agent never needs to see the application programming interface key again.
 
-Authentication happens once through `login`. The command checks the supplied dev.to application programming interface key against the account endpoint before saving the key. Later commands load the stored key automatically. `status` checks whether dev.to accepts the stored key, and `logout` deletes the local credential file.
+**Local images just work.** The dev.to application programming interface accepts only hosted image addresses. Your article has local files. Without devto_cli, the coding agent must find each image, upload each image, collect each address, rewrite the Markdown, and not forget the cover. With devto_cli, the coding agent passes the Markdown file, and devto_cli does the rest.
 
-The current implementation stores the key as plain text in `~/.config/devto_cli/credentials.json`, with file permissions restricted to the owner. The credential file belongs outside the repository; the credential file is not encrypted storage.
+**Safe by default.** `create` always makes a draft, unless the coding agent adds an explicit option to publish. `update` keeps the publication state as it is, so a small fix to a published article does not hide the article by accident. And the devto_cli skill says it in one plain rule: ask the developer before you publish.
 
-For article text, `--body-file` reads a Markdown file directly. Titles, tags, descriptions, series, canonical addresses, and cover images have separate options. This lets the article stay readable in the repository while publication settings remain explicit.
+**The traps are already found.** Some parts of the dev.to application programming interface do not do what their documentation suggests. The "unpublish" operation refuses an author's application programming interface key, so devto_cli turns an article back into a draft another way. dev.to limits how many images you can upload in a short time, so devto_cli waits and tries again. Reactions, user search, posting a comment, and deleting an article are not possible with an application programming interface key at all, and the devto_cli skill says so. A coding agent that reads the devto_cli skill does not spend twenty minutes finding this out again.
 
-Images can stay local. The cover option accepts an image address or a local file, and inline images use ordinary Markdown image links. When `create` or `update` finds a local image file, devto_cli uploads the file to dev.to first, and replaces the local path with the hosted address. A relative image path in the article starts from the folder of the Markdown file.
+A real example, from the day this article was written: I asked my coding agent to delete a test draft with devto_cli. The coding agent answered in a few seconds that the dev.to application programming interface has no operation to delete an article, and that the only way is the "Delete" button on the dev.to website. No trial and error, no strange error message to decode. The answer was already in the devto_cli skill.
 
-Creating an article without publication options sends `published: false`. Publishing immediately requires `--publish`; scheduling requires `--publish-at` with a future date. The command rejects conflicting publication options and more than four tags. Updating an article without a publication option leaves the existing publication setting unchanged, so updating a published article does not automatically turn the article into a draft.
+**Short commands, clean answers.** One command line is easier to read, to repeat, and to check than a block of hand-written requests. With `--format json`, devto_cli gives the coding agent all the fields that dev.to sends, so the coding agent reads the article identifier directly and uses it in the next update.
 
-Article commands offer terminal text, a Markdown table, or structured JavaScript Object Notation output through `--format json`. Structured output lets a coding agent read the returned article identifier without extracting the identifier from coloured terminal text.
+## Add the devto_cli skill
 
-## What improves in practice
-
-Consider an article with a first draft and two rounds of revisions. The intended sequence is one creation followed by two updates, all reading the local Markdown file. Authentication is reused, and each update targets the same remote article.
-
-The practical gain is a repeatable transfer from reviewed local text to the dev.to draft. The local file can remain in version control, while the coding agent handles the command arguments and returned article details.
-
-There is no timing benchmark behind this article. The commands and behaviour described here were checked against the repository implementation; this draft does not claim a measured time saving or a live account test. Comparing the remote draft with the local text remains a separate verification step.
-
-## Start from the repository
-
-For a source checkout, install the workspace dependencies and check the available commands from the repository root:
-
-```bash
-pnpm install
-pnpm --filter devto_cli exec node --import tsx src/cli.ts --help
-```
-
-Ask your coding agent to read the repository's devto_cli skill and use the source checkout. Provide the dev.to key through your normal secret-handling process; keep the key out of article files, chat transcripts, and Git history.
-
-For readers using the commands directly, this example creates an unpublished draft from a local file after login:
+In the project where you write your articles, add the devto_cli skill with [skills.sh](https://skills.sh/docs), and select your coding agent when asked:
 
 ```bash
-pnpm --filter devto_cli exec node --import tsx src/cli.ts create \
-  --title "What I learned building this feature" \
-  --body-file ../../article.md \
-  --tags "typescript,writing" \
-  --format json
+npx skills add jeromeetienne/devto_cli --skill devto_cli
 ```
 
-The example assumes `article.md` is in the repository root. The workspace command runs inside `packages/devto_cli`, which explains the relative file path.
+Then log in one time with your dev.to application programming interface key. You can create the application programming interface key in the dev.to settings, in the "Extensions" section. Type this command yourself, so that the application programming interface key never goes through the chat:
 
-Review the returned article details and open the dev.to draft before publication. When the writing is ready, give your coding agent an explicit instruction to publish. The local article, the remote draft, and publication are three distinct steps that you can review separately.
+```bash
+printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login
+```
+
+Now ask your coding agent:
+
+> Put my article on dev.to as a draft, with its cover and its images. Give me the address of the draft.
+
+And after your next revision:
+
+> Update the same dev.to draft from the new version of the article. Keep the article as a draft.
+
+When the article is ready, and only then:
+
+> Publish the article on dev.to.
+
+Writing the article is your job. Moving the article to dev.to is now the job of the coding agent.

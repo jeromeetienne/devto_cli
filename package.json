@@ -1,14 +1,32 @@
 {
 	"name": "devto_cli_monorepo",
+	"version": "0.1.0",
 	"private": true,
 	"type": "module",
+	"license": "MIT",
+	"bin": {
+		"devto_cli": "packages/devto_cli/src/cli_launcher.mjs"
+	},
+	"files": [
+		"packages/devto_cli/src",
+		"skills"
+	],
 	"scripts": {
 		"build": "pnpm --recursive run build",
 		"test": "pnpm --recursive run test",
 		"typecheck": "pnpm --recursive run typecheck"
 	},
+	"dependencies": {
+		"chalk": "^5.6.2",
+		"commander": "^12.1.0",
+		"tsx": "^4.19.2",
+		"zod": "^3.23.8"
+	},
 	"devDependencies": {
 		"devto_cli": "workspace:*"
+	},
+	"engines": {
+		"node": ">=20.11"
 	},
 	"packageManager": "pnpm@10.33.2"
 }
