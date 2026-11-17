@@ -12,7 +12,6 @@
 		"skills"
 	],
 	"scripts": {
-		"build": "pnpm --recursive run build",
 		"test": "pnpm --recursive run test",
 		"typecheck": "pnpm --recursive run typecheck"
 	},

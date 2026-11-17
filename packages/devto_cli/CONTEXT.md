@@ -18,6 +18,7 @@ The command line `devto_cli`, a client of the dev.to API with a login that store
 
 ## Rules
 - The root `package.json` lists the runtime dependencies of this package, tsx included, because `npx` installs the root package from GitHub.
+- The root `package.json` has no script `build`, `prepare`, `prepack`, `preinstall`, `install`, or `postinstall`: with one of them, `npx` runs an `npm install` of the GitHub copy, that install fails, and `npx` exits with code 1 and no message.
 - Only `src/index.ts`, `src/cli.ts`, and `src/cli_launcher.mjs` sit in `src/`; every other source file is in a subfolder of `src/`.
 - The API key is never written in the project, only in the credential file of `src/config/`.
 - A test never sends a request to the real dev.to API: it gives a fake fetch function (`test/fake_fetch.ts`) to `DevtoClient`.
