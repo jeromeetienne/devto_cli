@@ -5,6 +5,7 @@ The command line `devto_cli`, a client of the dev.to API with a login that store
 
 ## Key Exports & Entry Points
 - `src/index.ts`: the public interface of the package (`DevtoClient`, `CredentialStore`, `ProgramFactory`, `ImageUploader`, `MarkdownImages`, the types and the Zod schemas).
+- `README.md`: the overview of the package for people: run, commands, library use, development, and folders.
 - `src/cli.ts`: the entry point of the command line; it is `dist/cli.js` after the build.
 - `src/cli_launcher.mjs`: the command `devto_cli` of the root `package.json`; it runs `src/cli.ts` with tsx, so `npx --yes github:jeromeetienne/devto_cli` works from any folder without a build.
 - `src/api/`: the client of the dev.to API — see its own CONTEXT.md.
@@ -13,7 +14,7 @@ The command line `devto_cli`, a client of the dev.to API with a login that store
 - `src/formatters/`: the output formats `json`, `markdown`, and `tty` — see its own CONTEXT.md.
 - `src/images/`: the upload of the local image files — see its own CONTEXT.md.
 - `test/`: the tests, run with `pnpm test`; they never call the real dev.to API.
-- Command to run this folder: `pnpm dev -- <command>`, or `npx --yes github:jeromeetienne/devto_cli <command>` from any folder.
+- Command to run this folder: `pnpm dev <command>`, or `npx --yes github:jeromeetienne/devto_cli <command>` from any folder.
 
 ## Rules
 - The root `package.json` lists the runtime dependencies of this package, tsx included, because `npx` installs the root package from GitHub.
