@@ -4,7 +4,7 @@
 Read and write the credential file that holds the dev.to API key, in `~/.config/devto_cli/credentials.json`.
 
 ## Key Exports & Entry Points
-- `credential_store.ts`: `CredentialStore`, with `save`, `load`, and `filePath`.
+- `credential_store.ts`: `CredentialStore`, with `save`, `load`, `delete`, and `filePath`.
 - `credential_types.ts`: `CredentialSchema` and `Credential`.
 
 ## Rules

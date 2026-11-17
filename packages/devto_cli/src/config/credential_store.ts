@@ -70,4 +70,21 @@ export class CredentialStore {
 		}
 		return CredentialSchema.parse(JSON.parse(text));
 	}
+
+	/**
+	 * Delete the credential file.
+	 *
+	 * @returns True when the file was deleted, false when the file did not exist.
+	 */
+	async delete(): Promise<boolean> {
+		try {
+			await Fs.promises.unlink(this.filePath);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				return false;
+			}
+			throw error;
+		}
+		return true;
+	}
 }

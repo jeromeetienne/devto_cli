@@ -4,7 +4,7 @@
 
 | Folder | Does | Never does | May import | Language and technologies | Workflow |
 |---|---|---|---|---|---|
-| `packages/devto_cli` | the command-line client of the dev.to API, with the `login` command | stores the API key in the project | no other package | TypeScript, tsx, Commander.js, Zod | the Issue Fix Workflow |
+| `packages/devto_cli` | the command-line client of the dev.to API, with the `login` command | stores the API key in the project | no other package | TypeScript, tsx, Commander.js, Zod, Chalk | the Issue Fix Workflow |
 
 ## Other folders
 

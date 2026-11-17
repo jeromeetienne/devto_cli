@@ -15,6 +15,9 @@ Run the command `login` one time. The command checks the API key with dev.to, th
 printf '%s' "$DEVTO_API_KEY" | npx devto_cli login
 ```
 
+- Check the login: `npx devto_cli status` says whether an API key is stored and whether dev.to accepts it. The exit code is 1 when the user is not logged in, or when the API key is not valid.
+- Log out: `npx devto_cli logout` deletes the stored API key.
+
 Never write the API key in a repository, in an issue, in a commit, or in a log message.
 
 ## Create an article
@@ -44,7 +47,13 @@ The command `update` takes the same options as the command `create`, and `--draf
 npx devto_cli list --filter unpublished
 ```
 
-The filter is `all`, `published`, or `unpublished`. Each line gives the identifier, the status, the title, the address, and the cover image. Add `--json` for JSON.
+The filter is `all`, `published`, or `unpublished`. Each article shows the identifier, the status, the title, the address, and the cover image.
+
+The commands `create`, `update`, and `list` take `--format <format>`:
+
+- `tty` (the default): text for the terminal, with colors.
+- `markdown`: a Markdown table.
+- `json`: JSON, for a script or a coding agent.
 
 ## Rules
 

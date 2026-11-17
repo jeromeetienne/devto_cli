@@ -3,6 +3,8 @@ import type { Command } from 'commander';
 import { DevtoClient } from '../api/devto_client.js';
 import type { DevtoArticle, DevtoArticleFilter } from '../api/devto_types.js';
 import { CredentialStore } from '../config/credential_store.js';
+import { ArticleFormatter, OUTPUT_FORMATS } from './article_formatter.js';
+import type { OutputFormat } from './article_formatter.js';
 import { ArticleOptions } from './article_options.js';
 import type { ArticleCommandOptions } from './article_options.js';
 
@@ -18,9 +20,14 @@ import type { ArticleCommandOptions } from './article_options.js';
 type RawArticleOptions = ArticleCommandOptions & {
 	/** The path of a Markdown file that holds the text of the article. */
 	bodyFile?: string;
-	/** True to write the result as JSON. */
-	json?: boolean;
+	/** The output format: json, markdown, or tty. */
+	format: string;
 };
+
+/**
+ * The text of the help of the option `--format`.
+ */
+const FORMAT_HELP = `the output format: ${OUTPUT_FORMATS.join(', ')}; tty adds colors for the terminal`;
 
 /**
  * The commands `create`, `update`, and `list`.
@@ -39,10 +46,11 @@ export class ArticleCommands {
 			.requiredOption('--title <title>', 'the title of the article');
 		ArticleCommands._addArticleOptions(createCommand);
 		createCommand.action(async (options: RawArticleOptions) => {
+			const format = ArticleFormatter.parseFormat(options.format);
 			const client = await ArticleCommands._getClient();
 			const input = ArticleOptions.toArticleInput(await ArticleCommands._readBody(options), new Date());
 			const article = await client.createArticle(input);
-			ArticleCommands._printArticle(article, options.json === true);
+			ArticleCommands._printArticles([article], format);
 		});
 
 		const updateCommand = program
@@ -57,10 +65,11 @@ export class ArticleCommands {
 			if (Number.isNaN(articleId)) {
 				throw new Error(`The article identifier "${articleIdStr}" is not a number.`);
 			}
+			const format = ArticleFormatter.parseFormat(options.format);
 			const client = await ArticleCommands._getClient();
 			const input = ArticleOptions.toArticleInput(await ArticleCommands._readBody(options), new Date());
 			const article = await client.updateArticle(articleId, input);
-			ArticleCommands._printArticle(article, options.json === true);
+			ArticleCommands._printArticles([article], format);
 		});
 
 		program
@@ -69,20 +78,15 @@ export class ArticleCommands {
 			.option('--filter <filter>', 'all, published, or unpublished', 'all')
 			.option('--page <page>', 'the page number, from 1', '1')
 			.option('--per-page <perPage>', 'the number of articles on each page', '30')
-			.option('--json', 'write the result as JSON')
-			.action(async (options: { filter: string, page: string, perPage: string, json?: boolean }) => {
+			.option('--format <format>', FORMAT_HELP, 'tty')
+			.action(async (options: { filter: string, page: string, perPage: string, format: string }) => {
 				const filter = ArticleCommands._parseFilter(options.filter);
+				const format = ArticleFormatter.parseFormat(options.format);
 				const client = await ArticleCommands._getClient();
 				const page = Number.parseInt(options.page, 10);
 				const perPage = Number.parseInt(options.perPage, 10);
 				const articles = await client.listMyArticles(filter, page, perPage);
-				if (options.json === true) {
-					console.log(JSON.stringify(articles, null, '\t'));
-					return;
-				}
-				for (const article of articles) {
-					console.log(ArticleCommands._formatArticle(article));
-				}
+				ArticleCommands._printArticles(articles, format);
 			});
 	}
 
@@ -109,7 +113,7 @@ export class ArticleCommands {
 			.option('--series <series>', 'the name of the series')
 			.option('--publish', 'publish the article now')
 			.option('--publish-at <publishAt>', 'publish the article at a future date, for example 2026-12-01T09:00:00Z')
-			.option('--json', 'write the result as JSON');
+			.option('--format <format>', FORMAT_HELP, 'tty');
 	}
 
 	/**
@@ -161,29 +165,13 @@ export class ArticleCommands {
 	}
 
 	/**
-	 * Write one article on the standard output.
+	 * Write the articles on the standard output.
 	 *
-	 * @param article The article.
-	 * @param isJson True to write the article as JSON.
+	 * @param articles The articles.
+	 * @param format The output format.
 	 * @returns Nothing.
 	 */
-	private static _printArticle(article: DevtoArticle, isJson: boolean): void {
-		if (isJson === true) {
-			console.log(JSON.stringify(article, null, '\t'));
-			return;
-		}
-		console.log(ArticleCommands._formatArticle(article));
-	}
-
-	/**
-	 * Format one article on one line.
-	 *
-	 * @param article The article.
-	 * @returns The line.
-	 */
-	private static _formatArticle(article: DevtoArticle): string {
-		const status = article.published === true ? 'published' : 'draft';
-		const coverImage = article.cover_image ?? 'no cover image';
-		return `${article.id}\t${status}\t${article.title}\t${article.url ?? ''}\t${coverImage}`;
+	private static _printArticles(articles: DevtoArticle[], format: OutputFormat): void {
+		console.log(ArticleFormatter.format(articles, format));
 	}
 }
