@@ -37,9 +37,9 @@ Authentication happens once through `login`. The command checks the supplied dev
 
 The current implementation stores the key as plain text in `~/.config/devto_cli/credentials.json`, with file permissions restricted to the owner. The credential file belongs outside the repository; the credential file is not encrypted storage.
 
-For article text, `--body-file` reads a Markdown file directly. Titles, tags, descriptions, series, canonical addresses, and cover image addresses have separate options. This lets the article stay readable in the repository while publication settings remain explicit.
+For article text, `--body-file` reads a Markdown file directly. Titles, tags, descriptions, series, canonical addresses, and cover images have separate options. This lets the article stay readable in the repository while publication settings remain explicit.
 
-Images need hosted addresses. The cover option accepts an image address, and inline images use ordinary Markdown image links. devto_cli does not upload local image files.
+Images can stay local. The cover option accepts an image address or a local file, and inline images use ordinary Markdown image links. When `create` or `update` finds a local image file, devto_cli uploads the file to dev.to first, and replaces the local path with the hosted address. A relative image path in the article starts from the folder of the Markdown file.
 
 Creating an article without publication options sends `published: false`. Publishing immediately requires `--publish`; scheduling requires `--publish-at` with a future date. The command rejects conflicting publication options and more than four tags. Updating an article without a publication option leaves the existing publication setting unchanged, so updating a published article does not automatically turn the article into a draft.
 
