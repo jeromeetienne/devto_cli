@@ -9,6 +9,8 @@
 
 *Writing about your code with a coding agent? Keep the article in your repository and let devto_cli carry the draft to dev.to.*
 
+![A local Markdown article passes through devto_cli into an unpublished dev.to draft.](image-main-v1.png)
+
 ## The article is already beside the code
 
 You finish a feature, ask your coding agent to explain the feature, and revise the explanation into an article. The Markdown file sits beside the source code, where examples and claims are easy to check. You can review the article changes with the same tools you use to review code.
