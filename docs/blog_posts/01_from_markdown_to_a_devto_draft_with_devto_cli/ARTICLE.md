@@ -63,10 +63,10 @@ In the project where you write your articles, add the devto_cli skill with [skil
 npx skills add jeromeetienne/devto_cli --skill devto_cli
 ```
 
-Then log in one time with your dev.to application programming interface key. You can create the application programming interface key in the dev.to settings, in the "Extensions" section. Type this command yourself, so that the application programming interface key never goes through the chat:
+Then log in one time with your dev.to application programming interface key. You can create the application programming interface key in the dev.to settings, in the "Extensions" section. Type this command yourself, so that the application programming interface key never goes through the chat. Paste the application programming interface key when the command asks for it: the command does not show it.
 
 ```bash
-printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login
+npx --yes github:jeromeetienne/devto_cli login
 ```
 
 Now ask your coding agent:

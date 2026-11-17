@@ -3,27 +3,70 @@ import { CredentialStore } from '../config/credential_store.js';
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-//	CommandClient — creates the DevtoClient of a command with the stored API key
+//	CommandClient — creates the DevtoClient of a command with its API key
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Creates the `DevtoClient` of a command with the stored API key.
+ * The API key that a command uses, and the place where the API key comes from.
+ */
+export type CommandApiKey = {
+	/** The dev.to API key. */
+	apiKey: string;
+	/** The place where the API key comes from: the environment variable, or the path of the credential file. */
+	source: string;
+};
+
+/**
+ * Creates the `DevtoClient` of a command with the API key of the environment variable `DEVTO_API_KEY`, or with the
+ * stored API key.
  */
 export class CommandClient {
+	/** The name of the environment variable that holds the API key. It wins over the credential file. */
+	static readonly API_KEY_ENV_NAME = 'DEVTO_API_KEY';
+
 	/**
-	 * Create a client with the stored API key.
+	 * Create a client with the API key of the environment variable `DEVTO_API_KEY`, or with the stored API key.
 	 *
 	 * @returns The client.
 	 */
 	static async create(): Promise<DevtoClient> {
-		const credential = await new CredentialStore().load();
-		if (credential === null) {
-			throw new Error('No stored API key. Run `devto_cli login` first.');
+		const commandApiKey = await CommandClient.loadApiKey();
+		if (commandApiKey === null) {
+			throw new Error(`No API key. Run \`devto_cli login\` first, or set ${CommandClient.API_KEY_ENV_NAME}.`);
 		}
 		return new DevtoClient({
-			apiKey: credential.apiKey,
+			apiKey: commandApiKey.apiKey,
 		});
+	}
+
+	/**
+	 * Read the API key of the environment variable `DEVTO_API_KEY`, or else the stored API key.
+	 *
+	 * @param env The environment variables. The default is `process.env`.
+	 * @param credentialStore The credential store. The default is the credential store of the home folder.
+	 * @returns The API key and its source, or null when there is no API key.
+	 */
+	static async loadApiKey(
+		env: NodeJS.ProcessEnv = process.env,
+		credentialStore: CredentialStore = new CredentialStore(),
+	): Promise<CommandApiKey | null> {
+		const envApiKey = (env[CommandClient.API_KEY_ENV_NAME] ?? '').trim();
+		if (envApiKey.length > 0) {
+			return {
+				apiKey: envApiKey,
+				source: `the environment variable ${CommandClient.API_KEY_ENV_NAME}`,
+			};
+		}
+
+		const credential = await credentialStore.load();
+		if (credential === null) {
+			return null;
+		}
+		return {
+			apiKey: credential.apiKey,
+			source: credentialStore.filePath,
+		};
 	}
 
 	/**

@@ -2,6 +2,7 @@ import Chalk from 'chalk';
 import type { Command } from 'commander';
 import { DevtoClient } from '../api/devto_client.js';
 import { CredentialStore } from '../config/credential_store.js';
+import { CommandClient } from './command_client.js';
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,10 +23,9 @@ export class AuthCommands {
 	static register(program: Command): void {
 		program
 			.command('login')
-			.description('check the dev.to API key, and store it in the home folder of the user')
-			.option('--api-key <apiKey>', 'the dev.to API key; when not given, read from the standard input')
-			.action(async (options: { apiKey?: string }) => {
-				await AuthCommands._login(options.apiKey);
+			.description('ask for the dev.to API key, check it, and store it in the home folder of the user')
+			.action(async () => {
+				await AuthCommands._login();
 			});
 
 		program
@@ -49,16 +49,26 @@ export class AuthCommands {
 	///////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
+	/** The page of the dev.to settings where the user creates an API key. */
+	private static readonly API_KEY_PAGE_URL = 'https://dev.to/settings/extensions';
+
 	/**
-	 * Check the API key with dev.to, then store the API key.
+	 * Read the API key, check the API key with dev.to, then store the API key. In a terminal, ask for the API key
+	 * and hide what the user types. Else, read the API key from the standard input.
 	 *
-	 * @param apiKeyOption The API key from the command line, or undefined.
 	 * @returns Nothing.
 	 */
-	private static async _login(apiKeyOption: string | undefined): Promise<void> {
-		const apiKey = (apiKeyOption ?? await AuthCommands._readStdin()).trim();
+	private static async _login(): Promise<void> {
+		let apiKeyStr: string;
+		if (process.stdin.isTTY === true) {
+			process.stderr.write(`Create an API key at ${AuthCommands.API_KEY_PAGE_URL}\n`);
+			apiKeyStr = await AuthCommands._readHidden('Paste your dev.to API key: ');
+		} else {
+			apiKeyStr = await AuthCommands._readStdin();
+		}
+		const apiKey = apiKeyStr.trim();
 		if (apiKey.length === 0) {
-			throw new Error('No API key. Give --api-key, or write the API key on the standard input.');
+			throw new Error('No API key. Paste the API key, or write the API key on the standard input.');
 		}
 
 		const client = new DevtoClient({
@@ -78,23 +88,24 @@ export class AuthCommands {
 	 */
 	private static async _status(): Promise<void> {
 		const credentialStore = new CredentialStore();
-		const credential = await credentialStore.load();
-		if (credential === null) {
-			console.log(`${Chalk.yellow('Not logged in')}: no API key in ${credentialStore.filePath}`);
+		const commandApiKey = await CommandClient.loadApiKey(process.env, credentialStore);
+		if (commandApiKey === null) {
+			console.log(`${Chalk.yellow('Not logged in')}: no API key in ${credentialStore.filePath}, `
+				+ `and no ${CommandClient.API_KEY_ENV_NAME}.`);
 			process.exitCode = 1;
 			return;
 		}
 
 		const client = new DevtoClient({
-			apiKey: credential.apiKey,
+			apiKey: commandApiKey.apiKey,
 		});
 		try {
 			const user = await client.getMe();
 			console.log(`${Chalk.green('Logged in')} as @${user.username}. dev.to accepts the API key.`);
-			console.log(Chalk.dim(`The API key is in ${credentialStore.filePath}`));
+			console.log(Chalk.dim(`The API key comes from ${commandApiKey.source}`));
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			console.log(`${Chalk.red('API key not valid')}: an API key is stored, but the check failed.`);
+			console.log(`${Chalk.red('API key not valid')}: dev.to refuses the API key of ${commandApiKey.source}.`);
 			console.log(Chalk.dim(message));
 			process.exitCode = 1;
 		}
@@ -113,6 +124,50 @@ export class AuthCommands {
 			return;
 		}
 		console.log(`${Chalk.green('Logged out')}: deleted ${credentialStore.filePath}`);
+	}
+
+	/**
+	 * Ask a question in the terminal, and read the answer without showing it. Enter ends the answer, Backspace
+	 * deletes the last character, and Control-C or Control-D cancels.
+	 *
+	 * @param question The question, written on the standard error.
+	 * @returns The answer.
+	 */
+	private static async _readHidden(question: string): Promise<string> {
+		process.stderr.write(question);
+		const stdin = process.stdin;
+		stdin.setRawMode(true);
+		stdin.setEncoding('utf8');
+		stdin.resume();
+		try {
+			return await new Promise<string>((resolve, reject) => {
+				let answer = '';
+				const onData = (text: string): void => {
+					for (const character of text) {
+						if (character === '\r' || character === '\n') {
+							stdin.off('data', onData);
+							resolve(answer);
+							return;
+						}
+						if (character === '\u0003' || character === '\u0004') {
+							stdin.off('data', onData);
+							reject(new Error('Login cancelled.'));
+							return;
+						}
+						if (character === '\u007f' || character === '\b') {
+							answer = answer.slice(0, -1);
+							continue;
+						}
+						answer += character;
+					}
+				};
+				stdin.on('data', onData);
+			});
+		} finally {
+			stdin.setRawMode(false);
+			stdin.pause();
+			process.stderr.write('\n');
+		}
 	}
 
 	/**

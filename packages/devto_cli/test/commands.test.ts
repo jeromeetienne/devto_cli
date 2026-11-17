@@ -1,9 +1,13 @@
 import Assert from 'node:assert/strict';
+import Fs from 'node:fs';
+import Os from 'node:os';
+import Path from 'node:path';
 import Test from 'node:test';
 import { AnalyticsCommands } from '../src/commands/analytics_commands.js';
 import { CommandClient } from '../src/commands/command_client.js';
 import { ProgramFactory } from '../src/commands/program_factory.js';
 import { SearchCommands } from '../src/commands/search_commands.js';
+import { CredentialStore } from '../src/config/credential_store.js';
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,4 +116,30 @@ Test.test('the search options check the page', () => {
 	Assert.throws(() => {
 		CommandClient.parsePositiveInteger('0', 'page');
 	}, /positive integer/);
+});
+
+Test.test('the API key of DEVTO_API_KEY wins over the stored API key', async () => {
+	const configDir = await Fs.promises.mkdtemp(Path.join(Os.tmpdir(), 'devto_cli_test_'));
+	try {
+		const credentialStore = new CredentialStore(configDir);
+		Assert.equal(await CommandClient.loadApiKey({}, credentialStore), null);
+
+		await credentialStore.save('stored-key');
+		Assert.deepEqual(await CommandClient.loadApiKey({}, credentialStore), {
+			apiKey: 'stored-key',
+			source: credentialStore.filePath,
+		});
+
+		Assert.deepEqual(await CommandClient.loadApiKey({
+			DEVTO_API_KEY: ' env-key ',
+		}, credentialStore), {
+			apiKey: 'env-key',
+			source: 'the environment variable DEVTO_API_KEY',
+		});
+	} finally {
+		await Fs.promises.rm(configDir, {
+			recursive: true,
+			force: true,
+		});
+	}
 });

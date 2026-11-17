@@ -13,7 +13,7 @@ npx skills add jeromeetienne/devto_cli --skill devto_cli
 Or run the commands yourself, from any folder, with no build and no npm registry:
 
 ```bash
-printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login
+npx --yes github:jeromeetienne/devto_cli login
 npx --yes github:jeromeetienne/devto_cli create --title "My title" --body-file ./article.md --cover-image ./cover.png
 ```
 

@@ -9,8 +9,9 @@ description: Create, update, schedule, read, preview, and list dev.to articles, 
 
 ## Login
 
-- Log in one time: `printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login`. The command checks the API key with dev.to, then stores the API key in `~/.config/devto_cli/credentials.json`. Every other command reads the API key from that file.
-- Check the login: `npx --yes github:jeromeetienne/devto_cli status` says whether an API key is stored and whether dev.to accepts it. The exit code is 1 when the user is not logged in, or when the API key is not valid.
+- Log in one time: the developer types `npx --yes github:jeromeetienne/devto_cli login` in a terminal, and pastes the API key. The command does not show the API key. The command checks the API key with dev.to, then stores the API key in `~/.config/devto_cli/credentials.json`. Every other command reads the API key from that file. A script can pipe the API key: `printf '%s' "$DEVTO_API_KEY" | npx --yes github:jeromeetienne/devto_cli login`.
+- Without a login: set the environment variable `DEVTO_API_KEY`. Every command uses `DEVTO_API_KEY` before the credential file.
+- Check the login: `npx --yes github:jeromeetienne/devto_cli status` says where the API key comes from and whether dev.to accepts it. The exit code is 1 when the user is not logged in, or when the API key is not valid.
 - Log out: `npx --yes github:jeromeetienne/devto_cli logout` deletes the stored API key.
 
 Never write the API key in a repository, in an issue, in a commit, or in a log message.
