@@ -11,5 +11,6 @@ Upload the local image files to dev.to: the cover image, and the images of a Mar
 - Nothing here imports from `../commands`, `../config`, or `../formatters`.
 - `ImageUploader` takes only the `uploadImage` method of the client (`ImageUploadClient`), so that a test gives a fake client.
 - An address (`https://…`, `data:…`, `//…`) is never uploaded; only a local path is.
+- An image inside an inline code span or a fenced code block is an example, and is never uploaded.
 - Each file is uploaded one time, even when the text names it several times.
 - A relative path in a Markdown text starts from the folder of the Markdown file.

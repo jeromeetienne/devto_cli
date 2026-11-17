@@ -99,3 +99,25 @@ Test.test('contentTypeOf gives the media type, and refuses an unknown extension'
 		ImageUploader.contentTypeOf('a.bmp');
 	}, /extension/);
 });
+
+Test.test('findLocalPaths and replacePaths skip the images inside inline code and inside fenced code blocks', () => {
+	const markdown = [
+		'Write `![diagram](./diagram.png)` in your file, or ``![x](./x.png)``.',
+		'```markdown',
+		'![fenced](./fenced.png)',
+		'```',
+		'~~~',
+		'![tilde](./tilde.png)',
+		'~~~',
+		'![Real](./real.png)',
+	].join('\n');
+	Assert.deepEqual(MarkdownImages.findLocalPaths(markdown), [
+		'./real.png',
+	]);
+	const replaced = MarkdownImages.replacePaths(markdown, new Map([
+		['./diagram.png', 'https://cdn.example.com/diagram.png'],
+		['./fenced.png', 'https://cdn.example.com/fenced.png'],
+		['./real.png', 'https://cdn.example.com/real.png'],
+	]));
+	Assert.equal(replaced, markdown.replace('./real.png', 'https://cdn.example.com/real.png'));
+});
