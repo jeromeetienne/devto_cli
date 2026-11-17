@@ -8,4 +8,4 @@
 
 Each article has a numbered folder containing the article draft and related material.
 
-- [From Markdown to a dev.to Draft with devto_cli](01_from_markdown_to_a_devto_draft_with_devto_cli/README.md).
+- [Let Your Agent Drive dev.to](01_from_markdown_to_a_devto_draft_with_devto_cli/README.md).

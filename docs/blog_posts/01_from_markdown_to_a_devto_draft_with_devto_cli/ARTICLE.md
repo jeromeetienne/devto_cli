@@ -1,8 +1,8 @@
-# From Markdown to a dev.to Draft with devto_cli
+# Let Your Agent Drive dev.to
 
 - Created: 17 November 2026
 - Last updated: 17 November 2026
-- Status: Local article draft for review; not uploaded or published
+- Status: Article draft for review; uploaded to dev.to as a draft, not published
 - Related framing: [Project instructions](../../../AGENTS.md)
 - Related rules: [Documentation rules](../../../.agents/skills/docs_folder_system/SKILL.md)
 - Related issue: [Technical article workflow, issue #3](https://github.com/jeromeetienne/devto_cli/issues/3)
@@ -81,4 +81,4 @@ When the article is ready, and only then:
 
 > Publish the article on dev.to.
 
-Writing the article is your job. Moving the article to dev.to is now the job of the coding agent.
+Writing the article is your job. Driving dev.to is now the job of the coding agent.
