@@ -10,6 +10,7 @@
 
 | Folder | Does | Never does | Language and technologies | Workflow |
 |---|---|---|---|---|
+| `.` | repository documentation and workspace configuration | holds application source code | Markdown, JSON, YAML | follow The Rules of the Repo |
 | `skills/devto_cli` | the `SKILL.md` file that lets a coding agent use `devto_cli` | holds code | Markdown | the Issue Fix Workflow |
 | `.agents/skills` | the installed skills | gets a change in this repository | Markdown | install the skills again from `coding_agent_plugins` |
 | `.claude/skills` | the symbolic links to `.agents/skills` | holds a file that is not a symbolic link | — | install the skills again from `coding_agent_plugins` |
